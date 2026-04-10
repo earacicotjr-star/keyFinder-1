@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>keyFinder - Find Leaked API Keys, Tokens & Secrets in Your Browser</title>
+  <meta name="description" content="Chrome extension that passively finds leaked API keys, tokens, and secrets on every page you visit. 80+ detection patterns. 10 attack surfaces. Zero config. Manifest V3.">
+  <meta name="keywords" content="chrome extension secret scanner, api key finder, leaked credentials detector, secret detection, api keys, api security, browser extension, bug bounty, pentesting, infosec, javascript, manifest v3, osint, reconnaissance, secrets, aws keys, cybersecurity, hacking, leaked credentials, secret scanner, security tool">
+  <meta name="author" content="Moamen Basel">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://momenbasel.github.io/keyFinder/">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="keyFinder - Passively Find Leaked Secrets in Your Browser">
+  <meta property="og:description" content="Chrome extension that scans every page for leaked API keys, tokens, and credentials. 80+ patterns. 10 attack surfaces. Zero config.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://momenbasel.github.io/keyFinder/">
+  <meta property="og:image" content="https://raw.githubusercontent.com/momenbasel/keyFinder/master/icons/social-preview.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@momenbassel">
+  <meta name="twitter:creator" content="@momenbassel">
+  <meta name="twitter:title" content="keyFinder - Passively Find Leaked Secrets in Your Browser">
+  <meta name="twitter:description" content="Chrome extension scanning every page for leaked API keys, tokens, and credentials. 80+ patterns. 10 attack surfaces. Zero config.">
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/momenbasel/keyFinder/master/icons/social-preview.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/momenbasel/keyFinder/master/icons/icon128.png">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "keyFinder",
+    "applicationCategory": "BrowserExtension",
+    "operatingSystem": "Chrome, Chromium",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "description": "Chrome extension that passively finds leaked API keys, tokens, and secrets on every page you visit. 80+ detection patterns across 10 attack surfaces with zero configuration.",
+    "url": "https://momenbasel.github.io/keyFinder/",
+    "downloadUrl": "https://github.com/momenbasel/keyFinder/releases",
+    "author": { "@type": "Person", "name": "Moamen Basel", "url": "https://github.com/momenbasel" },
+    "license": "https://opensource.org/licenses/MIT",
+    "programmingLanguage": "JavaScript",
+    "browserRequirements": "Requires Chrome or Chromium-based browser with Manifest V3 support"
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --bg-card: #111827;
+      --bg-code: #0d1520;
+      --border: #1e293b;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --text-muted: #64748b;
+      --accent: #10b981;
+      --accent-secondary: #22d3ee;
+      --accent-glow: rgba(16, 185, 129, 0.15);
+      --accent-glow-secondary: rgba(34, 211, 238, 0.1);
+      --green: #34d399;
+      --yellow: #fbbf24;
+      --purple: #a78bfa;
+      --pink: #f472b6;
+      --red: #f87171;
+      --cyan: #22d3ee;
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    a { color: var(--accent); text-decoration: none; transition: opacity 0.2s; }
+    a:hover { opacity: 0.85; }
+
+    code, pre {
+      font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace;
+    }
+
+    /* ---- NAV ---- */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      background: rgba(10, 14, 23, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 1.1rem; color: var(--text);
+    }
+    .nav-logo img { height: 28px; width: 28px; border-radius: 6px; }
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a { color: var(--text-dim); font-size: 0.9rem; font-weight: 500; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links .btn-sm {
+      background: var(--accent);
+      color: #0a0e17;
+      padding: 6px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .nav-links .btn-sm:hover { opacity: 0.9; }
+
+    /* ---- HERO ---- */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 120px 2rem 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -40%; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-content {
+      max-width: 800px;
+      text-align: center;
+      position: relative; z-index: 1;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      margin-bottom: 2rem;
+    }
+    .hero-badge span { color: var(--accent); font-weight: 600; }
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.25rem;
+    }
+    .hero h1 .gradient {
+      background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 1.2rem;
+      color: var(--text-dim);
+      max-width: 600px;
+      margin: 0 auto 2.5rem;
+    }
+    .hero-actions {
+      display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 28px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #0a0e17;
+    }
+    .btn-primary:hover { box-shadow: 0 0 30px var(--accent-glow); transform: translateY(-1px); color: #0a0e17; }
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--text-muted); transform: translateY(-1px); }
+
+    /* ---- SURFACES VISUAL ---- */
+    .surfaces-visual {
+      margin-top: 4rem;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      max-width: 640px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .surface-chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 8px;
+      text-align: center;
+      transition: border-color 0.3s, transform 0.2s;
+    }
+    .surface-chip:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .surface-chip .s-icon {
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+      display: block;
+      color: var(--accent);
+    }
+    .surface-chip .s-icon svg { width: 24px; height: 24px; display: inline-block; }
+    .surface-chip .s-label {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      line-height: 1.3;
+      font-weight: 500;
+    }
+
+    /* ---- SECTIONS ---- */
+    section {
+      padding: 100px 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .section-label {
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .section-desc {
+      color: var(--text-dim);
+      font-size: 1.05rem;
+      max-width: 600px;
+      margin-bottom: 3rem;
+    }
+
+    /* ---- FEATURES GRID ---- */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      transition: border-color 0.3s, transform 0.2s;
+    }
+    .feature-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .feature-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+    }
+    .feature-icon.emerald { background: rgba(16, 185, 129, 0.12); color: var(--accent); }
+    .feature-icon.cyan { background: rgba(34, 211, 238, 0.12); color: var(--cyan); }
+    .feature-icon.purple { background: rgba(167, 139, 250, 0.12); color: var(--purple); }
+    .feature-icon.yellow { background: rgba(251, 191, 36, 0.12); color: var(--yellow); }
+    .feature-icon.pink { background: rgba(244, 114, 182, 0.12); color: var(--pink); }
+    .feature-icon.red { background: rgba(248, 113, 113, 0.12); color: var(--red); }
+    .feature-card h3 {
+      font-size: 1.05rem; font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .feature-card p {
+      color: var(--text-dim); font-size: 0.9rem; line-height: 1.6;
+    }
+
+    /* ---- DETECTION COVERAGE ---- */
+    .detection-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+    }
+    .detection-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      transition: border-color 0.3s;
+    }
+    .detection-card:hover { border-color: var(--accent); }
+    .detection-card h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .detection-card h4 .d-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .detection-card .providers-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .detection-card .prov-tag {
+      display: inline-block;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.15);
+      color: var(--text-dim);
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    /* ---- ATTACK SURFACES ---- */
+    .surfaces-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 1rem;
+    }
+    .surface-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      transition: border-color 0.3s;
+    }
+    .surface-item:hover { border-color: var(--accent); }
+    .surface-num {
+      flex-shrink: 0;
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    .surface-item h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .surface-item p {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    /* ---- INSTALL SECTION ---- */
+    .install-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 1.5rem;
+    }
+    .install-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .install-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .install-header .tag {
+      display: inline-block;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--accent);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .install-body {
+      padding: 20px 24px;
+    }
+    .install-step {
+      display: flex;
+      gap: 12px;
+      padding: 8px 0;
+      align-items: flex-start;
+    }
+    .install-step .step-num {
+      flex-shrink: 0;
+      width: 24px; height: 24px;
+      border-radius: 6px;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      font-size: 0.72rem;
+    }
+    .install-step .step-text {
+      color: var(--text-dim);
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+    .install-step .step-text code {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.82rem;
+      color: var(--text);
+    }
+
+    /* ---- STATS ---- */
+    .stats-row {
+      display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
+      margin-top: 4rem;
+    }
+    .stat {
+      text-align: center;
+      min-width: 140px;
+    }
+    .stat-val {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ---- CTA ---- */
+    .cta {
+      text-align: center;
+      padding: 100px 2rem;
+      position: relative;
+    }
+    .cta::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta h2 {
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+    .cta p {
+      color: var(--text-dim);
+      font-size: 1.05rem;
+      max-width: 500px;
+      margin: 0 auto 2rem;
+    }
+
+    /* ---- FOOTER ---- */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 2rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+    footer a { color: var(--text-dim); }
+    .footer-links {
+      display: flex; gap: 2rem; justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 768px) {
+      .nav-links a:not(.btn-sm) { display: none; }
+      .features-grid { grid-template-columns: 1fr; }
+      .detection-grid { grid-template-columns: 1fr; }
+      .surfaces-list { grid-template-columns: 1fr; }
+      .install-grid { grid-template-columns: 1fr; }
+      .surfaces-visual { grid-template-columns: repeat(3, 1fr); }
+      section { padding: 60px 1.25rem; }
+    }
+    @media (max-width: 480px) {
+      .surfaces-visual { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* ---- ANIMATIONS ---- */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate {
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards;
+    }
+    .animate.d1 { animation-delay: 0.1s; }
+    .animate.d2 { animation-delay: 0.2s; }
+    .animate.d3 { animation-delay: 0.3s; }
+    .animate.d4 { animation-delay: 0.4s; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <img src="https://raw.githubusercontent.com/momenbasel/keyFinder/master/icons/icon128.png" alt="keyFinder">
+        keyFinder
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#detection">Detection</a>
+        <a href="#surfaces">Surfaces</a>
+        <a href="#install">Install</a>
+        <a href="https://github.com/momenbasel/keyFinder" class="btn-sm">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge animate">
+        <span>558+ stars</span> Trusted by security researchers
+      </div>
+      <h1 class="animate d1">
+        Find leaked secrets,<br>
+        <span class="gradient">passively.</span>
+      </h1>
+      <p class="animate d2">
+        A Chrome extension that scans every page you visit for API keys, tokens, and credentials.
+        80+ patterns. 10 attack surfaces. Zero config.
+      </p>
+      <div class="hero-actions animate d3">
+        <a href="https://github.com/momenbasel/keyFinder/releases" class="btn btn-primary">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm1 11.5v-4h2L8 4 5 7.5h2v4h2z"/></svg>
+          Install from Releases
+        </a>
+        <a href="https://github.com/momenbasel/keyFinder" class="btn btn-secondary">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          View Source
+        </a>
+      </div>
+
+      <!-- 10 Attack Surfaces Visual -->
+      <div class="surfaces-visual animate d4">
+        <div class="surface-chip">
+          <span class="s-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></span>
+          <span class="s-label">Script URLs</span>
+        </div>
+        <div class="surface-chip">
+          <span class="s-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
+          <span class="s-label">Inline Scripts</span>
+        </div>
+        <div class="surface-chip">
+          <span class="s-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 2H3v16h5v4l4-4h5l4-4V2z"/></svg></span>
+          <span class="s-label">External JS</span>
+        </div>
+        <div class="surface-chip">
+          <span class="s-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg></span>
+          <span class="s-label">Meta Tags</span>
+        </div>
+        <div class="surface-chip">
+          <span class="s-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></span>
+          <span class="s-label">Hidden Fields</span>
+        </div>
+        <div class="surface-chip">
+          <span class="s-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span>
+          <span class="s-label">Data Attrs</span>
+        </div>
+        <div class="surface-chip">
+          <span class="s-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+          <span class="s-label">Comments</span>
+        </div>
+        <div class="surface-chip">
+          <span class="s-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+          <span class="s-label">URL Params</span>
+        </div>
+        <div class="surface-chip">
+          <span class="s-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span>
+          <span class="s-label">Web Storage</span>
+        </div>
+        <div class="surface-chip">
+          <span class="s-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>
+          <span class="s-label">Network</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">Powerful detection, zero friction</h2>
+    <p class="section-desc">Install once. Every page you visit is automatically scanned for leaked secrets across all attack surfaces.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon emerald">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+        </div>
+        <h3>80+ Detection Patterns</h3>
+        <p>Covers cloud providers, payment platforms, communication tools, AI services, databases, SaaS, infrastructure keys, crypto secrets, and generic patterns.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon cyan">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </div>
+        <h3>10 Attack Surfaces</h3>
+        <p>Scans script URLs, inline scripts, external JS, meta tags, hidden form fields, data attributes, HTML comments, URL parameters, web storage, and network responses.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon purple">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <h3>Shannon Entropy Analysis</h3>
+        <p>Calculates Shannon entropy for detected strings. High-entropy values get flagged as likely secrets, reducing false positives on random-looking tokens.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon yellow">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3>Zero Dependencies</h3>
+        <p>Pure vanilla JavaScript. No external libraries, no build step, no framework. Lightweight, fast, and auditable. Just the extension code and nothing else.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon pink">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <h3>Manifest V3</h3>
+        <p>Built on the latest Chrome extension architecture with a service worker. Future-proof, secure, and compatible with all modern Chromium browsers.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon red">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </div>
+        <h3>Export and Report</h3>
+        <p>Professional dashboard with filtering, sorting, and search. Export findings as JSON or CSV. Badge counter on the extension icon shows live results.</p>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-val">80+</div>
+        <div class="stat-label">Detection Patterns</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val">10</div>
+        <div class="stat-label">Attack Surfaces</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val">558+</div>
+        <div class="stat-label">GitHub Stars</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val">0</div>
+        <div class="stat-label">Dependencies</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DETECTION COVERAGE -->
+  <section id="detection">
+    <div class="section-label">Detection Coverage</div>
+    <h2 class="section-title">Secrets across every category</h2>
+    <p class="section-desc">From cloud provider keys to cryptocurrency wallet seeds, keyFinder recognizes credentials across the entire modern stack.</p>
+    <div class="detection-grid">
+      <div class="detection-card">
+        <h4><span class="d-dot" style="background: var(--accent)"></span>Cloud</h4>
+        <div class="providers-list">
+          <span class="prov-tag">AWS</span>
+          <span class="prov-tag">GCP</span>
+          <span class="prov-tag">Azure</span>
+          <span class="prov-tag">DigitalOcean</span>
+          <span class="prov-tag">Heroku</span>
+        </div>
+      </div>
+      <div class="detection-card">
+        <h4><span class="d-dot" style="background: var(--cyan)"></span>Source Control</h4>
+        <div class="providers-list">
+          <span class="prov-tag">GitHub</span>
+          <span class="prov-tag">GitLab</span>
+          <span class="prov-tag">Bitbucket</span>
+        </div>
+      </div>
+      <div class="detection-card">
+        <h4><span class="d-dot" style="background: var(--yellow)"></span>Payments</h4>
+        <div class="providers-list">
+          <span class="prov-tag">Stripe</span>
+          <span class="prov-tag">PayPal</span>
+          <span class="prov-tag">Square</span>
+          <span class="prov-tag">Braintree</span>
+        </div>
+      </div>
+      <div class="detection-card">
+        <h4><span class="d-dot" style="background: var(--purple)"></span>Communication</h4>
+        <div class="providers-list">
+          <span class="prov-tag">Slack</span>
+          <span class="prov-tag">Discord</span>
+          <span class="prov-tag">Telegram</span>
+          <span class="prov-tag">Twilio</span>
+          <span class="prov-tag">SendGrid</span>
+        </div>
+      </div>
+      <div class="detection-card">
+        <h4><span class="d-dot" style="background: var(--pink)"></span>AI / ML</h4>
+        <div class="providers-list">
+          <span class="prov-tag">OpenAI</span>
+          <span class="prov-tag">Anthropic</span>
+          <span class="prov-tag">Cohere</span>
+          <span class="prov-tag">HuggingFace</span>
+        </div>
+      </div>
+      <div class="detection-card">
+        <h4><span class="d-dot" style="background: var(--red)"></span>Databases</h4>
+        <div class="providers-list">
+          <span class="prov-tag">MongoDB</span>
+          <span class="prov-tag">PostgreSQL</span>
+          <span class="prov-tag">Redis</span>
+          <span class="prov-tag">MySQL</span>
+        </div>
+      </div>
+      <div class="detection-card">
+        <h4><span class="d-dot" style="background: var(--green)"></span>SaaS</h4>
+        <div class="providers-list">
+          <span class="prov-tag">Mailchimp</span>
+          <span class="prov-tag">Algolia</span>
+          <span class="prov-tag">Firebase</span>
+          <span class="prov-tag">Shopify</span>
+          <span class="prov-tag">Zendesk</span>
+        </div>
+      </div>
+      <div class="detection-card">
+        <h4><span class="d-dot" style="background: #f59e0b"></span>Infrastructure</h4>
+        <div class="providers-list">
+          <span class="prov-tag">Docker</span>
+          <span class="prov-tag">Kubernetes</span>
+          <span class="prov-tag">Terraform</span>
+          <span class="prov-tag">Vault</span>
+          <span class="prov-tag">NPM</span>
+        </div>
+      </div>
+      <div class="detection-card">
+        <h4><span class="d-dot" style="background: #fb923c"></span>Crypto</h4>
+        <div class="providers-list">
+          <span class="prov-tag">Private Keys</span>
+          <span class="prov-tag">Seed Phrases</span>
+          <span class="prov-tag">Wallet Keys</span>
+          <span class="prov-tag">JWT Secrets</span>
+        </div>
+      </div>
+      <div class="detection-card">
+        <h4><span class="d-dot" style="background: var(--text-muted)"></span>Generic</h4>
+        <div class="providers-list">
+          <span class="prov-tag">API Keys</span>
+          <span class="prov-tag">Bearer Tokens</span>
+          <span class="prov-tag">Basic Auth</span>
+          <span class="prov-tag">Passwords in URLs</span>
+          <span class="prov-tag">High Entropy</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ATTACK SURFACES -->
+  <section id="surfaces">
+    <div class="section-label">Attack Surfaces</div>
+    <h2 class="section-title">10 scanning vectors per page</h2>
+    <p class="section-desc">Every page load triggers a comprehensive scan across all the places where secrets commonly leak.</p>
+    <div class="surfaces-list">
+      <div class="surface-item">
+        <div class="surface-num">1</div>
+        <div>
+          <h4>Script src URLs</h4>
+          <p>Examines URLs in script tags for embedded API keys and tokens passed as query parameters.</p>
+        </div>
+      </div>
+      <div class="surface-item">
+        <div class="surface-num">2</div>
+        <div>
+          <h4>Inline Scripts</h4>
+          <p>Parses all inline JavaScript blocks on the page for hardcoded credentials and secret assignments.</p>
+        </div>
+      </div>
+      <div class="surface-item">
+        <div class="surface-num">3</div>
+        <div>
+          <h4>External Scripts</h4>
+          <p>Fetches and analyzes external JavaScript files loaded by the page for leaked keys and tokens.</p>
+        </div>
+      </div>
+      <div class="surface-item">
+        <div class="surface-num">4</div>
+        <div>
+          <h4>Meta Tags</h4>
+          <p>Inspects meta tag content attributes where configuration keys and tokens are sometimes exposed.</p>
+        </div>
+      </div>
+      <div class="surface-item">
+        <div class="surface-num">5</div>
+        <div>
+          <h4>Hidden Form Fields</h4>
+          <p>Scans hidden input fields that developers use to pass tokens and API keys through forms.</p>
+        </div>
+      </div>
+      <div class="surface-item">
+        <div class="surface-num">6</div>
+        <div>
+          <h4>Data Attributes</h4>
+          <p>Checks HTML data-* attributes where frontend frameworks often store configuration secrets.</p>
+        </div>
+      </div>
+      <div class="surface-item">
+        <div class="surface-num">7</div>
+        <div>
+          <h4>HTML Comments</h4>
+          <p>Extracts and scans HTML comments for accidentally committed credentials and debug tokens.</p>
+        </div>
+      </div>
+      <div class="surface-item">
+        <div class="surface-num">8</div>
+        <div>
+          <h4>URL Parameters</h4>
+          <p>Analyzes query strings and URL fragments for API keys and authentication tokens passed in the clear.</p>
+        </div>
+      </div>
+      <div class="surface-item">
+        <div class="surface-num">9</div>
+        <div>
+          <h4>Web Storage</h4>
+          <p>Monitors localStorage and sessionStorage for secrets stored client-side by web applications.</p>
+        </div>
+      </div>
+      <div class="surface-item">
+        <div class="surface-num">10</div>
+        <div>
+          <h4>Network Responses</h4>
+          <p>Intercepts XHR and Fetch responses to detect secrets returned by APIs and backend services.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTALLATION -->
+  <section id="install">
+    <div class="section-label">Installation</div>
+    <h2 class="section-title">Up and running in under a minute</h2>
+    <p class="section-desc">Two ways to install. Both take less than 60 seconds. No build tools required.</p>
+    <div class="install-grid">
+      <div class="install-card">
+        <div class="install-header">
+          From Release
+          <span class="tag">Recommended</span>
+        </div>
+        <div class="install-body">
+          <div class="install-step">
+            <div class="step-num">1</div>
+            <div class="step-text">Download the latest release from <a href="https://github.com/momenbasel/keyFinder/releases">GitHub Releases</a></div>
+          </div>
+          <div class="install-step">
+            <div class="step-num">2</div>
+            <div class="step-text">Extract the ZIP file to a folder on your machine</div>
+          </div>
+          <div class="install-step">
+            <div class="step-num">3</div>
+            <div class="step-text">Open Chrome and navigate to <code>chrome://extensions</code></div>
+          </div>
+          <div class="install-step">
+            <div class="step-num">4</div>
+            <div class="step-text">Enable <strong>Developer mode</strong> in the top-right corner</div>
+          </div>
+          <div class="install-step">
+            <div class="step-num">5</div>
+            <div class="step-text">Click <strong>Load unpacked</strong> and select the extracted folder</div>
+          </div>
+        </div>
+      </div>
+      <div class="install-card">
+        <div class="install-header">
+          From Source
+        </div>
+        <div class="install-body">
+          <div class="install-step">
+            <div class="step-num">1</div>
+            <div class="step-text">Clone the repository:<br><code>git clone https://github.com/momenbasel/keyFinder.git</code></div>
+          </div>
+          <div class="install-step">
+            <div class="step-num">2</div>
+            <div class="step-text">Open Chrome and navigate to <code>chrome://extensions</code></div>
+          </div>
+          <div class="install-step">
+            <div class="step-num">3</div>
+            <div class="step-text">Enable <strong>Developer mode</strong> in the top-right corner</div>
+          </div>
+          <div class="install-step">
+            <div class="step-num">4</div>
+            <div class="step-text">Click <strong>Load unpacked</strong> and select the cloned <code>keyFinder</code> directory</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <h2>Start finding leaked secrets today</h2>
+    <p>Install keyFinder and let it passively scan every page you visit. No configuration needed.</p>
+    <div class="hero-actions">
+      <a href="https://github.com/momenbasel/keyFinder/releases" class="btn btn-primary">
+        Download Latest Release
+      </a>
+      <a href="https://github.com/momenbasel/keyFinder" class="btn btn-secondary">
+        View on GitHub
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-links">
+      <a href="https://github.com/momenbasel/keyFinder">GitHub</a>
+      <a href="https://github.com/momenbasel/keyFinder/releases">Releases</a>
+      <a href="https://github.com/momenbasel/keyFinder/issues">Issues</a>
+      <a href="https://github.com/momenbasel/keyFinder/blob/master/LICENSE">MIT License</a>
+      <a href="https://twitter.com/momenbassel">Twitter</a>
+    </div>
+    <p>Built by <a href="https://github.com/momenbasel">Moamen Basel</a></p>
+  </footer>
+
+  <!-- Intersection Observer for animations -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('animate');
+            observer.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      document.querySelectorAll('.feature-card, .detection-card, .surface-item, .install-card, .surface-chip').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        observer.observe(el);
+      });
+
+      const style = document.createElement('style');
+      style.textContent = `.feature-card.animate, .detection-card.animate, .surface-item.animate, .install-card.animate, .surface-chip.animate { opacity: 1 !important; transform: translateY(0) !important; }`;
+      document.head.appendChild(style);
+    });
+  </script>
+</body>
+</html>
