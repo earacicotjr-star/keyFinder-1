@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>keyFinder - Find Leaked API Keys, Tokens & Secrets in Your Browser</title>
-  <meta name="description" content="Chrome extension that passively finds leaked API keys, tokens, and secrets on every page you visit. 80+ detection patterns. 10 attack surfaces. Zero config. Manifest V3.">
-  <meta name="keywords" content="chrome extension secret scanner, api key finder, leaked credentials detector, secret detection, api keys, api security, browser extension, bug bounty, pentesting, infosec, javascript, manifest v3, osint, reconnaissance, secrets, aws keys, cybersecurity, hacking, leaked credentials, secret scanner, security tool">
+  <meta name="description" content="Browser extension for Chrome and Firefox that passively finds leaked API keys, tokens, and secrets on every page you visit. 80+ detection patterns. 10 attack surfaces. Zero config. Manifest V3.">
+  <meta name="keywords" content="browser extension secret scanner, api key finder, leaked credentials detector, secret detection, api keys, api security, chrome extension, firefox addon, bug bounty, pentesting, infosec, javascript, manifest v3, osint, reconnaissance, secrets, aws keys, cybersecurity, hacking, leaked credentials, secret scanner, security tool">
   <meta name="author" content="Moamen Basel">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://momenbasel.github.io/keyFinder/">
 
   <!-- Open Graph -->
   <meta property="og:title" content="keyFinder - Passively Find Leaked Secrets in Your Browser">
-  <meta property="og:description" content="Chrome extension that scans every page for leaked API keys, tokens, and credentials. 80+ patterns. 10 attack surfaces. Zero config.">
+  <meta property="og:description" content="Browser extension for Chrome and Firefox that scans every page for leaked API keys, tokens, and credentials. 80+ patterns. 10 attack surfaces. Zero config.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://momenbasel.github.io/keyFinder/">
   <meta property="og:image" content="https://raw.githubusercontent.com/momenbasel/keyFinder/master/icons/social-preview.png">
@@ -22,7 +22,7 @@
   <meta name="twitter:site" content="@momenbassel">
   <meta name="twitter:creator" content="@momenbassel">
   <meta name="twitter:title" content="keyFinder - Passively Find Leaked Secrets in Your Browser">
-  <meta name="twitter:description" content="Chrome extension scanning every page for leaked API keys, tokens, and credentials. 80+ patterns. 10 attack surfaces. Zero config.">
+  <meta name="twitter:description" content="Browser extension for Chrome and Firefox scanning every page for leaked API keys, tokens, and credentials. 80+ patterns. 10 attack surfaces. Zero config.">
   <meta name="twitter:image" content="https://raw.githubusercontent.com/momenbasel/keyFinder/master/icons/social-preview.png">
 
   <!-- Favicon -->
@@ -35,15 +35,15 @@
     "@type": "SoftwareApplication",
     "name": "keyFinder",
     "applicationCategory": "BrowserExtension",
-    "operatingSystem": "Chrome, Chromium",
+    "operatingSystem": "Chrome, Firefox, Chromium",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-    "description": "Chrome extension that passively finds leaked API keys, tokens, and secrets on every page you visit. 80+ detection patterns across 10 attack surfaces with zero configuration.",
+    "description": "Browser extension for Chrome and Firefox that passively finds leaked API keys, tokens, and secrets on every page you visit. 80+ detection patterns across 10 attack surfaces with zero configuration.",
     "url": "https://momenbasel.github.io/keyFinder/",
     "downloadUrl": "https://github.com/momenbasel/keyFinder/releases",
     "author": { "@type": "Person", "name": "Moamen Basel", "url": "https://github.com/momenbasel" },
     "license": "https://opensource.org/licenses/MIT",
     "programmingLanguage": "JavaScript",
-    "browserRequirements": "Requires Chrome or Chromium-based browser with Manifest V3 support"
+    "browserRequirements": "Requires Chrome, Firefox 128+, or Chromium-based browser with Manifest V3 support"
   }
   </script>
 
@@ -555,13 +555,17 @@
         <span class="gradient">passively.</span>
       </h1>
       <p class="animate d2">
-        A Chrome extension that scans every page you visit for API keys, tokens, and credentials.
+        A browser extension for Chrome and Firefox that scans every page you visit for API keys, tokens, and credentials.
         80+ patterns. 10 attack surfaces. Zero config.
       </p>
       <div class="hero-actions animate d3">
-        <a href="https://github.com/momenbasel/keyFinder/releases" class="btn btn-primary">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm1 11.5v-4h2L8 4 5 7.5h2v4h2z"/></svg>
-          Install from Releases
+        <a href="https://chromewebstore.google.com/detail/keyfinder/oogbljkilkfgdlkbmajlolpanilnnkim" class="btn btn-primary">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="3"/></svg>
+          Chrome Web Store
+        </a>
+        <a href="https://addons.mozilla.org/en-US/firefox/addon/keyfinder-original/" class="btn btn-primary" style="background: #ff7139; color: #fff;">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14.4 4.8c-.5-1.2-1.5-2.2-2.7-2.9.3.6.5 1.2.5 1.9 0 1.5-.9 2.8-2.2 3.4.1-.4.2-.9.2-1.4 0-2-1.3-3.6-3.1-4.2.3.5.5 1.1.5 1.8 0 1.9-1.3 3.4-3 3.8C3 7.7 2 9.3 2 11.1 2 13.8 4.7 16 8 16s6-2.2 6-5c0-2.3-1-4.3-1.6-5.2-.5.5-1.1.9-1.8 1.1.9-.7 1.5-1.7 1.8-2.1z"/></svg>
+          Firefox Add-ons
         </a>
         <a href="https://github.com/momenbasel/keyFinder" class="btn btn-secondary">
           <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
@@ -654,7 +658,7 @@
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
         </div>
         <h3>Manifest V3</h3>
-        <p>Built on the latest Chrome extension architecture with a service worker. Future-proof, secure, and compatible with all modern Chromium browsers.</p>
+        <p>Built on the latest extension architecture with MV3. Works on Chrome, Firefox 128+, and all modern Chromium browsers out of the box.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon red">
@@ -875,52 +879,41 @@
     <div class="install-grid">
       <div class="install-card">
         <div class="install-header">
-          From Release
+          Chrome
           <span class="tag">Recommended</span>
         </div>
         <div class="install-body">
           <div class="install-step">
             <div class="step-num">1</div>
-            <div class="step-text">Download the latest release from <a href="https://github.com/momenbasel/keyFinder/releases">GitHub Releases</a></div>
+            <div class="step-text">Visit the <a href="https://chromewebstore.google.com/detail/keyfinder/oogbljkilkfgdlkbmajlolpanilnnkim">Chrome Web Store</a></div>
           </div>
           <div class="install-step">
             <div class="step-num">2</div>
-            <div class="step-text">Extract the ZIP file to a folder on your machine</div>
+            <div class="step-text">Click <strong>Add to Chrome</strong></div>
           </div>
           <div class="install-step">
             <div class="step-num">3</div>
-            <div class="step-text">Open Chrome and navigate to <code>chrome://extensions</code></div>
-          </div>
-          <div class="install-step">
-            <div class="step-num">4</div>
-            <div class="step-text">Enable <strong>Developer mode</strong> in the top-right corner</div>
-          </div>
-          <div class="install-step">
-            <div class="step-num">5</div>
-            <div class="step-text">Click <strong>Load unpacked</strong> and select the extracted folder</div>
+            <div class="step-text">Done - KeyFinder starts scanning automatically</div>
           </div>
         </div>
       </div>
       <div class="install-card">
         <div class="install-header">
-          From Source
+          Firefox
+          <span class="tag">New</span>
         </div>
         <div class="install-body">
           <div class="install-step">
             <div class="step-num">1</div>
-            <div class="step-text">Clone the repository:<br><code>git clone https://github.com/momenbasel/keyFinder.git</code></div>
+            <div class="step-text">Visit <a href="https://addons.mozilla.org/en-US/firefox/addon/keyfinder-original/">Firefox Add-ons</a></div>
           </div>
           <div class="install-step">
             <div class="step-num">2</div>
-            <div class="step-text">Open Chrome and navigate to <code>chrome://extensions</code></div>
+            <div class="step-text">Click <strong>Add to Firefox</strong></div>
           </div>
           <div class="install-step">
             <div class="step-num">3</div>
-            <div class="step-text">Enable <strong>Developer mode</strong> in the top-right corner</div>
-          </div>
-          <div class="install-step">
-            <div class="step-num">4</div>
-            <div class="step-text">Click <strong>Load unpacked</strong> and select the cloned <code>keyFinder</code> directory</div>
+            <div class="step-text">Done - requires Firefox 128 or later</div>
           </div>
         </div>
       </div>
@@ -932,11 +925,11 @@
     <h2>Start finding leaked secrets today</h2>
     <p>Install keyFinder and let it passively scan every page you visit. No configuration needed.</p>
     <div class="hero-actions">
-      <a href="https://github.com/momenbasel/keyFinder/releases" class="btn btn-primary">
-        Download Latest Release
+      <a href="https://chromewebstore.google.com/detail/keyfinder/oogbljkilkfgdlkbmajlolpanilnnkim" class="btn btn-primary">
+        Install for Chrome
       </a>
-      <a href="https://github.com/momenbasel/keyFinder" class="btn btn-secondary">
-        View on GitHub
+      <a href="https://addons.mozilla.org/en-US/firefox/addon/keyfinder-original/" class="btn btn-primary" style="background: #ff7139; color: #fff;">
+        Install for Firefox
       </a>
     </div>
   </section>
@@ -944,9 +937,10 @@
   <!-- FOOTER -->
   <footer>
     <div class="footer-links">
+      <a href="https://chromewebstore.google.com/detail/keyfinder/oogbljkilkfgdlkbmajlolpanilnnkim">Chrome Web Store</a>
+      <a href="https://addons.mozilla.org/en-US/firefox/addon/keyfinder-original/">Firefox Add-ons</a>
       <a href="https://github.com/momenbasel/keyFinder">GitHub</a>
       <a href="https://github.com/momenbasel/keyFinder/releases">Releases</a>
-      <a href="https://github.com/momenbasel/keyFinder/issues">Issues</a>
       <a href="https://github.com/momenbasel/keyFinder/blob/master/LICENSE">MIT License</a>
       <a href="https://twitter.com/momenbassel">Twitter</a>
     </div>
