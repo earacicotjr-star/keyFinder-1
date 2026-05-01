@@ -1,0 +1,10 @@
+{
+  "extension_name": {
+    "message": "KeyFinder",
+    "description": "Name of the extension"
+  },
+  "extension_description": {
+    "message": "Passively discovers API keys, tokens, and secrets leaked in page scripts, DOM, network responses, and browser storage. Available for Safari.",
+    "description": "Description of the extension"
+  }
+}
