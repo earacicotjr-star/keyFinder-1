@@ -1,47 +1,52 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
+# Build script for keyFinder extensions
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-DIST="$ROOT/dist"
-VERSION=$(grep '"version"' "$ROOT/manifest.json" | head -1 | sed 's/.*: *"\([^"]*\)".*/\1/')
+set -e
 
-rm -rf "$DIST"
-mkdir -p "$DIST"
+BUILD_DIR="build"
+rm -rf $BUILD_DIR
+mkdir -p $BUILD_DIR
 
-SHARED_FILES=(
-  js/background.js
-  js/content.js
-  js/interceptor.js
-  js/patterns.js
-  js/popup.js
-  js/results.js
-  css/popup.css
-  css/results.css
-  icons/icon16.png
-  icons/icon48.png
-  icons/icon128.png
-  popup.html
-  results.html
-)
+# Chrome (use manifest.json)
+echo "Building Chrome extension..."
+cp -r . $BUILD_DIR/chrome
+cd $BUILD_DIR/chrome
+rm -f manifest.firefox.json manifest.edge.json manifest.safari.json README.md LICENSE .gitignore scripts/
+cd ../..
 
-# --- Chrome build ---
-CHROME_DIR="$DIST/chrome"
-mkdir -p "$CHROME_DIR"/{js,css,icons}
-cp "$ROOT/manifest.json" "$CHROME_DIR/manifest.json"
-for f in "${SHARED_FILES[@]}"; do
-  cp "$ROOT/$f" "$CHROME_DIR/$f"
-done
-(cd "$CHROME_DIR" && zip -r "$DIST/keyfinder-v${VERSION}-chrome.zip" . -x '.*')
-echo "Built: dist/keyfinder-v${VERSION}-chrome.zip"
+# Firefox (use manifest.firefox.json)
+echo "Building Firefox extension..."
+cp -r . $BUILD_DIR/firefox
+cd $BUILD_DIR/firefox
+rm -f manifest.json manifest.edge.json manifest.safari.json README.md LICENSE .gitignore scripts/
+mv manifest.firefox.json manifest.json
+cd ../..
 
-# --- Firefox build ---
-FF_DIR="$DIST/firefox"
-mkdir -p "$FF_DIR"/{js,css,icons}
-cp "$ROOT/manifest.firefox.json" "$FF_DIR/manifest.json"
-for f in "${SHARED_FILES[@]}"; do
-  cp "$ROOT/$f" "$FF_DIR/$f"
-done
-(cd "$FF_DIR" && zip -r "$DIST/keyfinder-v${VERSION}-firefox.zip" . -x '.*')
-echo "Built: dist/keyfinder-v${VERSION}-firefox.zip"
+# Edge (use manifest.edge.json)
+echo "Building Edge extension..."
+cp -r . $BUILD_DIR/edge
+cd $BUILD_DIR/edge
+rm -f manifest.json manifest.firefox.json manifest.safari.json README.md LICENSE .gitignore scripts/
+mv manifest.edge.json manifest.json
+cd ../..
 
-echo "Done. Upload dist/keyfinder-v${VERSION}-firefox.zip to addons.mozilla.org"
+# Safari (use manifest.safari.json)
+echo "Building Safari extension..."
+cp -r . $BUILD_DIR/safari
+cd $BUILD_DIR/safari
+rm -f manifest.json manifest.firefox.json manifest.edge.json README.md LICENSE .gitignore scripts/
+mv manifest.safari.json manifest.json
+cd ../..
+
+# Create zip files
+echo "Creating zip archives..."
+cd $BUILD_DIR
+zip -r keyfinder-chrome.zip chrome
+zip -r keyfinder-firefox.zip firefox
+zip -r keyfinder-edge.zip edge
+zip -r keyfinder-safari.zip safari
+cd ..
+
+echo "✅ Build complete!"
+echo "Output files:"
+ls -la $BUILD_DIR/*.zip
