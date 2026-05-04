@@ -11,14 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Build Chrome
         run: |
           mkdir -p build/chrome
           cp -r . build/chrome
           cd build/chrome
           rm -f manifest.firefox.json manifest.edge.json manifest.safari.json README.md LICENSE .gitignore scripts/
-          
+
       - name: Build Firefox
         run: |
           mkdir -p build/firefox
@@ -26,7 +26,7 @@ jobs:
           cd build/firefox
           rm -f manifest.json manifest.edge.json manifest.safari.json README.md LICENSE .gitignore scripts/
           mv manifest.firefox.json manifest.json
-          
+
       - name: Build Edge
         run: |
           mkdir -p build/edge
@@ -34,7 +34,7 @@ jobs:
           cd build/edge
           rm -f manifest.json manifest.firefox.json manifest.safari.json README.md LICENSE .gitignore scripts/
           mv manifest.edge.json manifest.json
-          
+
       - name: Build Safari
         run: |
           mkdir -p build/safari
@@ -42,7 +42,7 @@ jobs:
           cd build/safari
           rm -f manifest.json manifest.firefox.json manifest.edge.json README.md LICENSE .gitignore scripts/
           mv manifest.safari.json manifest.json
-          
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
