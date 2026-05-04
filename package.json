@@ -1,0 +1,20 @@
+{
+  "name": "keyfinder",
+  "version": "2.0.0",
+  "description": "Passive API key and secret discovery for Chrome, Firefox, Edge, and Safari",
+  "scripts": {
+    "build": "bash scripts/build.sh",
+    "build:chrome": "cp manifest.json build/chrome/ && cd build/chrome && zip -r keyfinder-chrome.zip .",
+    "build:firefox": "cp manifest.firefox.json build/firefox/manifest.json && cd build/firefox && zip -r keyfinder-firefox.zip .",
+    "build:edge": "cp manifest.edge.json build/edge/manifest.json && cd build/edge && zip -r keyfinder-edge.zip .",
+    "build:safari": "cp manifest.safari.json build/safari/manifest.json && cd build/safari && zip -r keyfinder-safari.zip ."
+  },
+  "keywords": [
+    "security",
+    "api-keys",
+    "secrets",
+    "browser-extension"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/earacicotjr-star/keyFinder-1#readme"
+}
